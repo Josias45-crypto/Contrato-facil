@@ -217,7 +217,7 @@ Redacta el documento completo:`
 }
 
 // ─── Modal de Yape ─────────────────────────────────────────────
-function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas }) {
+function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas, modo = 'descarga', subtitulo }) {
   const [paso, setPaso] = useState('pago') // 'pago' | 'clave'
   const [clave, setClave] = useState('')
   const [claveError, setClaveError] = useState(false)
@@ -236,7 +236,7 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas }) {
     setClaveError(false)
     if (val.length === 4) {
       if (validarClave(val)) {
-        generarPDF(contrato, titulo, firmas)
+        if (modo === 'descarga') generarPDF(contrato, titulo, firmas)
         onDescarga()
       } else {
         setClaveError(true)
@@ -338,7 +338,7 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas }) {
             </h3>
           </div>
           <p style={{ fontSize: '0.82rem', color: 'var(--ink3)' }}>
-            Realiza el pago para descargar tu contrato en PDF
+            {subtitulo || 'Realiza el pago para descargar tu contrato en PDF'}
           </p>
         </div>
 
@@ -397,7 +397,13 @@ export default function Generador({ tipo, onVolver, theme, toggleTheme }) {
   const [error, setError] = useState('')
   const [paso, setPaso] = useState(1)
   const [mostrarYape, setMostrarYape] = useState(false)
+  const [modoYape, setModoYape] = useState('descarga')
   const [descargado, setDescargado] = useState(false)
+  const [edicionesUsadas, setEdicionesUsadas] = useState(() =>
+    parseInt(localStorage.getItem('cf_ediciones') || '0', 10)
+  )
+  const MAX_EDICIONES = 3
+  const edicionesRestantes = MAX_EDICIONES - edicionesUsadas
 
   const campos = camposPor[tipo] || []
   const clausulasOpciones = clausulasExtra[tipo] || []
@@ -425,6 +431,30 @@ export default function Generador({ tipo, onVolver, theme, toggleTheme }) {
       { rol: 'SEGUNDA PARTE', nombre: d.parte2 || '', dni: '' },
     ]
     return null
+  }
+
+  const handleEditar = () => {
+    if (edicionesUsadas >= MAX_EDICIONES) {
+      setModoYape('edicion')
+      setMostrarYape(true)
+      return
+    }
+    const nuevas = edicionesUsadas + 1
+    setEdicionesUsadas(nuevas)
+    localStorage.setItem('cf_ediciones', String(nuevas))
+    setContrato('')
+    setPaso(1)
+  }
+
+  const handleDescarga = () => {
+    setMostrarYape(false)
+    setDescargado(true)
+    setEdicionesUsadas(0)
+    localStorage.setItem('cf_ediciones', '0')
+    if (modoYape === 'edicion') {
+      setContrato('')
+      setPaso(1)
+    }
   }
 
   const avanzarPaso = () => {
@@ -476,8 +506,10 @@ export default function Generador({ tipo, onVolver, theme, toggleTheme }) {
           contrato={contrato}
           titulo={titulos[tipo]}
           firmas={getFirmas()}
+          modo={modoYape}
+          subtitulo={modoYape === 'edicion' ? 'Has usado tus 3 ediciones gratuitas. Realiza un pago de S/.4.90 para continuar editando.' : undefined}
           onCerrar={() => setMostrarYape(false)}
-          onDescarga={() => { setMostrarYape(false); setDescargado(true) }}
+          onDescarga={handleDescarga}
         />
       )}
 
@@ -587,12 +619,19 @@ export default function Generador({ tipo, onVolver, theme, toggleTheme }) {
                 <h2 className="font-display" style={{ fontSize: '1.65rem', fontWeight: 700, color: 'var(--ink)' }}>Revisa tu contrato</h2>
                 <p style={{ color: 'var(--ink3)', fontSize: '0.82rem', marginTop: '0.25rem' }}>Léelo antes de descargar</p>
               </div>
-              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <button className="btn-ghost" onClick={() => { setContrato(''); setPaso(1) }}>Editar</button>
-                {descargado
-                  ? <button className="btn-primary" onClick={() => generarPDF(contrato, titulos[tipo], getFirmas())}>⬇ Descargar de nuevo</button>
-                  : <button className="btn-primary" onClick={() => setMostrarYape(true)}>⬇ Descargar PDF — S/. 4.90</button>
-                }
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                  <button className="btn-ghost" onClick={handleEditar}>Editar</button>
+                  {descargado
+                    ? <button className="btn-primary" onClick={() => { setModoYape('descarga'); setMostrarYape(true) }}>⬇ Descargar de nuevo</button>
+                    : <button className="btn-primary" onClick={() => { setModoYape('descarga'); setMostrarYape(true) }}>⬇ Descargar PDF — S/. 4.90</button>
+                  }
+                </div>
+                <span style={{ fontSize: '0.72rem', color: edicionesRestantes === 0 ? '#C0392B' : 'var(--ink3)', fontWeight: edicionesRestantes === 0 ? 600 : 400 }}>
+                  {edicionesRestantes > 0
+                    ? `Ediciones gratuitas restantes: ${edicionesRestantes}`
+                    : 'Sin ediciones gratuitas — requiere pago para editar'}
+                </span>
               </div>
             </div>
 
