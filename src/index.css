@@ -1,0 +1,268 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+/* ── Tokens de diseño ─────────────────────────────────────────── */
+:root {
+  --navy:        #1B3A6B;
+  --navy-dark:   #142D55;
+  --navy-tint:   rgba(27, 58, 107, 0.07);
+  --gold:        #C9A84C;
+  --gold-bright: #DDB94C;
+  --gold-bg:     #FBF6E9;
+  --gold-border: #E5D49E;
+  --bg:          #FAFAF8;
+  --bg2:         #F3F2EE;
+  --bg3:         #E9E7E2;
+  --surface:     #FFFFFF;
+  --surface2:    #F7F6F2;
+  --ink:         #2D2D2D;
+  --ink2:        #4A4A4A;
+  --ink3:        #6B6B6B;
+  --green:       #2E7D52;
+  --green-bg:    #EBF5F0;
+  --border:      rgba(0, 0, 0, 0.07);
+  --border2:     rgba(0, 0, 0, 0.13);
+  --shadow:      0 1px 4px rgba(27,58,107,0.06), 0 4px 14px rgba(27,58,107,0.07);
+  --shadow-lg:   0 4px 24px rgba(27,58,107,0.15), 0 1px 4px rgba(27,58,107,0.08);
+  --radius:      12px;
+  --radius-sm:   8px;
+  --radius-pill: 999px;
+}
+
+[data-theme="dark"] {
+  --navy:        #2A5298;
+  --navy-dark:   #1B3A6B;
+  --navy-tint:   rgba(42, 82, 152, 0.12);
+  --gold:        #D4A83C;
+  --gold-bright: #E0B84E;
+  --gold-bg:     #2A2010;
+  --gold-border: #50380A;
+  --bg:          #151412;
+  --bg2:         #1C1A18;
+  --bg3:         #242220;
+  --surface:     #201E1C;
+  --surface2:    #282520;
+  --ink:         #F0EDE8;
+  --ink2:        #C0B8B0;
+  --ink3:        #7A7268;
+  --green:       #3DD68C;
+  --green-bg:    #0D2E1E;
+  --border:      rgba(255, 255, 255, 0.07);
+  --border2:     rgba(255, 255, 255, 0.13);
+  --shadow:      0 2px 16px rgba(0,0,0,0.32);
+  --shadow-lg:   0 8px 40px rgba(0,0,0,0.52);
+}
+
+/* ── Reset ────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display { font-family: 'Fraunces', Georgia, serif; }
+
+input, select, textarea, button { font-family: 'Inter', system-ui, sans-serif; }
+
+/* ── Animaciones ──────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position:  200% center; }
+}
+
+.animate-fade-up { animation: fadeUp 0.45s cubic-bezier(.22,.68,0,1.2) forwards; }
+.delay-1 { animation-delay: 0.07s;  opacity: 0; }
+.delay-2 { animation-delay: 0.14s;  opacity: 0; }
+.delay-3 { animation-delay: 0.21s;  opacity: 0; }
+.delay-4 { animation-delay: 0.32s;  opacity: 0; }
+.delay-5 { animation-delay: 0.44s;  opacity: 0; }
+
+/* ── Botón primario — azul marino ─────────────────────────────── */
+.btn-primary {
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.875rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px rgba(27,58,107,0.22);
+}
+.btn-primary:hover {
+  background: var(--navy-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(27,58,107,0.38);
+}
+.btn-primary:active  { transform: translateY(0); box-shadow: 0 2px 6px rgba(27,58,107,0.2); }
+.btn-primary:disabled {
+  background: var(--bg3);
+  color: var(--ink3);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Botón fantasma ───────────────────────────────────────────── */
+.btn-ghost {
+  background: var(--surface);
+  color: var(--ink2);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1.5rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+.btn-ghost:hover {
+  background: var(--navy-tint);
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+/* ── Cards ────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform 0.24s, box-shadow 0.24s, border-color 0.24s;
+}
+/* Acento de autoridad: borde izquierdo dorado */
+.card-accent {
+  border-left: 3px solid var(--gold);
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--gold-border);
+}
+
+/* ── Inputs ───────────────────────────────────────────────────── */
+.input-field {
+  width: 100%;
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  background: var(--surface);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.input-field:focus {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(27,58,107,0.11);
+}
+.input-field::placeholder { color: var(--ink3); }
+
+/* ── Tags de cláusulas ────────────────────────────────────────── */
+.tag-clausula {
+  border-radius: var(--radius-pill);
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1.5px solid var(--border2);
+  background: var(--surface);
+  color: var(--ink2);
+  font-weight: 500;
+}
+.tag-clausula.activo {
+  border-color: var(--navy);
+  background: var(--navy-tint);
+  color: var(--navy);
+  font-weight: 600;
+}
+
+/* ── Barra de progreso ────────────────────────────────────────── */
+.progress-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--navy), var(--gold));
+  border-radius: 99px;
+  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Toggle tema ──────────────────────────────────────────────── */
+.toggle-theme {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: var(--radius-pill);
+  padding: 0.38rem 0.85rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.85);
+  transition: background 0.18s;
+}
+.toggle-theme:hover { background: rgba(255,255,255,0.2); }
+
+/* Variante para fondo claro */
+.toggle-theme-light {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-pill);
+  padding: 0.38rem 0.85rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--ink2);
+  transition: background 0.18s;
+}
+.toggle-theme-light:hover { background: var(--bg3); }
+
+/* ── Dot en vivo ──────────────────────────────────────────────── */
+.dot-live {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #4ADE80;
+  box-shadow: 0 0 6px rgba(74,222,128,0.6);
+  animation: pulse-dot 1.8s infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Divisor ──────────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2rem 0;
+}
+
+/* ── Badge de sello legal ─────────────────────────────────────── */
+.legal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-border);
+  color: #8A6820;
+  border-radius: var(--radius-pill);
+  padding: 0.28rem 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
