@@ -470,7 +470,7 @@ export default function Generador({ tipo, onVolver, theme, toggleTheme }) {
     setError('')
     const prompt = buildPrompt(tipo, datos, clausulas, notaExtra, clausulaPersonalizada)
     try {
-      const response = await fetch('http://localhost:3001/api/generar', {
+      const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
