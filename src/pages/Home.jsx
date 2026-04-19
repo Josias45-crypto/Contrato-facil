@@ -223,13 +223,13 @@ export default function Home({ onEmpezar, theme, toggleTheme }) {
         </div>
 
         <h1 className="font-display" style={s.h1}>
-          Tu contrato legal listo<br />
+          Genera tu contrato legal en Perú<br />
           en <span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>menos de 2 minutos</span>
         </h1>
 
         <p style={s.sub}>
-          Genera contratos profesionales con IA, adaptados a la legislación peruana.
-          Sin abogados costosos, sin complicaciones.
+          Contratos de alquiler, compraventa y servicios adaptados al Código Civil peruano.
+          Con inteligencia artificial. Gratis, sin registro, descarga en PDF.
         </p>
 
         <div style={s.statsRow}>
@@ -277,7 +277,7 @@ export default function Home({ onEmpezar, theme, toggleTheme }) {
             Cómo funciona
           </div>
           <h2 className="font-display" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.2 }}>
-            Simple como debe ser
+            Cómo generar tu contrato en Perú
           </h2>
           <div style={s.howGrid}>
             {[
@@ -299,7 +299,7 @@ export default function Home({ onEmpezar, theme, toggleTheme }) {
       {/* Social proof */}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '4rem 1.5rem', textAlign: 'center' }}>
         <h2 className="font-display" style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: '2rem', color: 'var(--ink)' }}>
-          Lo que dicen nuestros usuarios
+          Peruanos que ya generaron sus contratos
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
           {[
@@ -320,7 +320,7 @@ export default function Home({ onEmpezar, theme, toggleTheme }) {
       {/* FAQ */}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 1.5rem 4rem' }}>
         <h2 className="font-display" style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: '2rem', color: 'var(--ink)', textAlign: 'center' }}>
-          Preguntas frecuentes
+          Preguntas frecuentes sobre contratos en Perú
         </h2>
         <div style={{ display: 'grid', gap: '0.85rem' }}>
           {[
@@ -337,14 +337,46 @@ export default function Home({ onEmpezar, theme, toggleTheme }) {
         </div>
       </div>
 
+      {/* Sección SEO local — texto indexable con keywords geográficas */}
+      <div style={{ background: 'var(--navy)', color: 'rgba(255,255,255,0.7)', padding: '3rem 1.5rem', textAlign: 'center' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <h2 className="font-display" style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', marginBottom: '0.75rem' }}>
+            Generador de contratos legales para todo el Perú
+          </h2>
+          <p style={{ fontSize: '0.85rem', lineHeight: 1.8, marginBottom: '1.25rem' }}>
+            Disponible para Lima, Arequipa, Trujillo, Chiclayo, Piura, Cusco y todas las ciudades del país.
+            Contratos adaptados al <strong style={{ color: 'rgba(255,255,255,0.9)' }}>Código Civil peruano (D. Leg. N° 295)</strong> y la legislación vigente 2025.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', justifyContent: 'center' }}>
+            {[
+              'Contrato de alquiler Lima',
+              'Contrato de arrendamiento Perú',
+              'Contrato de compraventa de vehículo',
+              'Contrato de servicios freelance',
+              'Declaración jurada Peru',
+              'Modelo contrato 2025',
+            ].map(tag => (
+              <span key={tag} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 999, padding: '0.3rem 0.8rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.75)' }}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Footer */}
       <footer style={s.footer}>
-        <div style={{ marginBottom: '0.6rem' }}>
+        <div style={{ marginBottom: '0.75rem' }}>
           <span className="legal-badge">🛡️ Documento Legal Referencial</span>
         </div>
-        <p style={{ fontWeight: 600, color: 'var(--ink2)', marginBottom: '0.3rem' }}>ContratoFácil · Perú 🇵🇪</p>
+        <p style={{ fontWeight: 600, color: 'var(--ink2)', marginBottom: '0.3rem' }}>
+          ContratoFácil · Generador de contratos legales · Perú 🇵🇪
+        </p>
+        <p style={{ marginBottom: '0.3rem' }}>
+          Contratos de alquiler, compraventa, servicios y documentos personalizados adaptados a la ley peruana.
+        </p>
         <p>
-          Los contratos generados son de carácter referencial. Para asesoría legal formal, consulte con un abogado colegiado.
+          Los contratos son de carácter referencial. Para asesoría legal formal, consulte con un abogado colegiado del Colegio de Abogados del Perú.
         </p>
       </footer>
     </div>

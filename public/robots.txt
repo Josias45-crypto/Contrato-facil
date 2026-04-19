@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Excluir panel de admin del índice
+Disallow: /admin-joel
+
+# Sitemap
+Sitemap: https://www.contratofacil.pe/sitemap.xml

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Página principal -->
+  <url>
+    <loc>https://www.contratofacil.pe/</loc>
+    <lastmod>2025-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="es-PE" href="https://www.contratofacil.pe/" />
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.contratofacil.pe/" />
+  </url>
+
+</urlset>
