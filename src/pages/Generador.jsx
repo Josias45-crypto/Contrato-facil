@@ -346,7 +346,7 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas }) {
         <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
           <div style={{ display: 'inline-block', padding: 8, background: '#fff', borderRadius: 14, border: '2px solid var(--border2)', boxShadow: '0 4px 12px rgba(27,58,107,0.1)' }}>
             <img
-              src="/yape-qr.png"
+              src="/yape-qr.webp"
               alt="QR Yape"
               style={{ width: 160, height: 160, borderRadius: 8, objectFit: 'contain', display: 'block' }}
             />
