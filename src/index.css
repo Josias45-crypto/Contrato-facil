@@ -1,99 +1,100 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Inter:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
-/* ── Tokens de diseño ─────────────────────────────────────────── */
+/* ── Tokens de diseño — paleta peruana ───────────────────────── */
 :root {
-  --navy:        #1B3A6B;
-  --navy-dark:   #142D55;
-  --navy-tint:   rgba(27, 58, 107, 0.07);
-  --gold:        #C9A84C;
-  --gold-bright: #DDB94C;
-  --gold-bg:     #FBF6E9;
-  --gold-border: #E5D49E;
-  --bg:          #FAFAF8;
-  --bg2:         #F3F2EE;
-  --bg3:         #E9E7E2;
+  /* Primarios */
+  --red:         #D91023;
+  --red-dark:    #B50D1C;
+  --red-tint:    rgba(217, 16, 35, 0.07);
+  --gold:        #F5A623;
+  --gold-dark:   #D98F10;
+  --gold-tint:   rgba(245, 166, 35, 0.10);
+  --gold-bg:     #FFF9EE;
+  --gold-border: #F5D08A;
+
+  /* Neutrales */
+  --bg:          #FAFAFA;
+  --bg2:         #F5F5F5;
+  --bg3:         #EAEAEA;
   --surface:     #FFFFFF;
-  --surface2:    #F7F6F2;
-  --ink:         #2D2D2D;
-  --ink2:        #4A4A4A;
+  --ink:         #1A1A1A;
+  --ink2:        #3D3D3D;
   --ink3:        #6B6B6B;
-  --green:       #2E7D52;
-  --green-bg:    #EBF5F0;
-  --border:      rgba(0, 0, 0, 0.07);
-  --border2:     rgba(0, 0, 0, 0.13);
-  --shadow:      0 1px 4px rgba(27,58,107,0.06), 0 4px 14px rgba(27,58,107,0.07);
-  --shadow-lg:   0 4px 24px rgba(27,58,107,0.15), 0 1px 4px rgba(27,58,107,0.08);
+  --ink4:        #9E9E9E;
+
+  /* Estado */
+  --green:       #1B8A4E;
+  --green-bg:    #E8F5ED;
+
+  /* Layout */
+  --border:      rgba(0, 0, 0, 0.08);
+  --border2:     rgba(0, 0, 0, 0.14);
+  --shadow:      0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.07);
+  --shadow-lg:   0 4px 28px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.06);
   --radius:      12px;
   --radius-sm:   8px;
   --radius-pill: 999px;
-}
 
-[data-theme="dark"] {
-  --navy:        #2A5298;
-  --navy-dark:   #1B3A6B;
-  --navy-tint:   rgba(42, 82, 152, 0.12);
-  --gold:        #D4A83C;
-  --gold-bright: #E0B84E;
-  --gold-bg:     #2A2010;
-  --gold-border: #50380A;
-  --bg:          #151412;
-  --bg2:         #1C1A18;
-  --bg3:         #242220;
-  --surface:     #201E1C;
-  --surface2:    #282520;
-  --ink:         #F0EDE8;
-  --ink2:        #C0B8B0;
-  --ink3:        #7A7268;
-  --green:       #3DD68C;
-  --green-bg:    #0D2E1E;
-  --border:      rgba(255, 255, 255, 0.07);
-  --border2:     rgba(255, 255, 255, 0.13);
-  --shadow:      0 2px 16px rgba(0,0,0,0.32);
-  --shadow-lg:   0 8px 40px rgba(0,0,0,0.52);
+  /* Alias de compatibilidad para componentes existentes */
+  --navy:        #D91023;
+  --navy-dark:   #B50D1C;
+  --navy-tint:   rgba(217, 16, 35, 0.07);
+  --bg3:         #EAEAEA;
+  --border2:     rgba(0, 0, 0, 0.14);
 }
 
 /* ── Reset ────────────────────────────────────────────────────── */
-* { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--ink);
   min-height: 100vh;
-  transition: background 0.3s, color 0.3s;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-.font-display { font-family: 'Fraunces', Georgia, serif; }
+.font-display {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+}
 
-input, select, textarea, button { font-family: 'Inter', system-ui, sans-serif; }
+input, select, textarea, button {
+  font-family: 'Inter', system-ui, sans-serif;
+}
 
 /* ── Animaciones ──────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
+  50%       { opacity: 0.35; }
 }
 @keyframes shimmer {
   from { background-position: -200% center; }
   to   { background-position:  200% center; }
 }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
-.animate-fade-up { animation: fadeUp 0.45s cubic-bezier(.22,.68,0,1.2) forwards; }
-.delay-1 { animation-delay: 0.07s;  opacity: 0; }
-.delay-2 { animation-delay: 0.14s;  opacity: 0; }
-.delay-3 { animation-delay: 0.21s;  opacity: 0; }
-.delay-4 { animation-delay: 0.32s;  opacity: 0; }
-.delay-5 { animation-delay: 0.44s;  opacity: 0; }
+.animate-fade-up { animation: fadeUp 0.4s cubic-bezier(.22,.68,0,1.15) forwards; }
+.delay-1  { animation-delay: 0.06s; opacity: 0; }
+.delay-2  { animation-delay: 0.12s; opacity: 0; }
+.delay-3  { animation-delay: 0.18s; opacity: 0; }
+.delay-4  { animation-delay: 0.26s; opacity: 0; }
+.delay-5  { animation-delay: 0.34s; opacity: 0; }
+.delay-6  { animation-delay: 0.40s; opacity: 0; }
+.delay-7  { animation-delay: 0.46s; opacity: 0; }
+.delay-8  { animation-delay: 0.52s; opacity: 0; }
+.delay-9  { animation-delay: 0.58s; opacity: 0; }
+.delay-10 { animation-delay: 0.64s; opacity: 0; }
 
-/* ── Botón primario — azul marino ─────────────────────────────── */
+/* ── Botón primario — rojo peruano ────────────────────────────── */
 .btn-primary {
-  background: var(--navy);
+  background: var(--red);
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
@@ -101,19 +102,19 @@ input, select, textarea, button { font-family: 'Inter', system-ui, sans-serif; }
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, transform 0.18s, box-shadow 0.2s;
   letter-spacing: 0.01em;
-  box-shadow: 0 2px 8px rgba(27,58,107,0.22);
+  box-shadow: 0 2px 8px rgba(217,16,35,0.22);
 }
 .btn-primary:hover {
-  background: var(--navy-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 22px rgba(27,58,107,0.38);
+  background: var(--red-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(217,16,35,0.32);
 }
-.btn-primary:active  { transform: translateY(0); box-shadow: 0 2px 6px rgba(27,58,107,0.2); }
+.btn-primary:active  { transform: translateY(0); box-shadow: 0 2px 6px rgba(217,16,35,0.2); }
 .btn-primary:disabled {
   background: var(--bg3);
-  color: var(--ink3);
+  color: var(--ink4);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -132,9 +133,9 @@ input, select, textarea, button { font-family: 'Inter', system-ui, sans-serif; }
   transition: background 0.18s, border-color 0.18s, color 0.18s;
 }
 .btn-ghost:hover {
-  background: var(--navy-tint);
-  border-color: var(--navy);
-  color: var(--navy);
+  background: var(--red-tint);
+  border-color: var(--red);
+  color: var(--red);
 }
 
 /* ── Cards ────────────────────────────────────────────────────── */
@@ -143,14 +144,12 @@ input, select, textarea, button { font-family: 'Inter', system-ui, sans-serif; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  transition: transform 0.24s, box-shadow 0.24s, border-color 0.24s;
+  transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
 }
-/* Acento de autoridad: borde izquierdo dorado */
-.card-accent {
-  border-left: 3px solid var(--gold);
-}
+.card-accent  { border-left: 3px solid var(--gold); }
+.card-accent-red { border-left: 3px solid var(--red); }
 .card-hover:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-lg);
   border-color: var(--gold-border);
 }
@@ -168,10 +167,10 @@ input, select, textarea, button { font-family: 'Inter', system-ui, sans-serif; }
   transition: border-color 0.18s, box-shadow 0.18s;
 }
 .input-field:focus {
-  border-color: var(--navy);
-  box-shadow: 0 0 0 3px rgba(27,58,107,0.11);
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(217,16,35,0.09);
 }
-.input-field::placeholder { color: var(--ink3); }
+.input-field::placeholder { color: var(--ink4); }
 
 /* ── Tags de cláusulas ────────────────────────────────────────── */
 .tag-clausula {
@@ -186,9 +185,9 @@ input, select, textarea, button { font-family: 'Inter', system-ui, sans-serif; }
   font-weight: 500;
 }
 .tag-clausula.activo {
-  border-color: var(--navy);
-  background: var(--navy-tint);
-  color: var(--navy);
+  border-color: var(--red);
+  background: var(--red-tint);
+  color: var(--red);
   font-weight: 600;
 }
 
@@ -202,7 +201,7 @@ input, select, textarea, button { font-family: 'Inter', system-ui, sans-serif; }
 }
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--navy), var(--gold));
+  background: linear-gradient(90deg, var(--red), var(--gold));
   border-radius: 99px;
   transition: width 0.5s cubic-bezier(.4,0,.2,1);
 }
@@ -219,19 +218,6 @@ input, select, textarea, button { font-family: 'Inter', system-ui, sans-serif; }
   transition: background 0.18s;
 }
 .toggle-theme:hover { background: rgba(255,255,255,0.2); }
-
-/* Variante para fondo claro */
-.toggle-theme-light {
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-pill);
-  padding: 0.38rem 0.85rem;
-  cursor: pointer;
-  font-size: 0.82rem;
-  color: var(--ink2);
-  transition: background 0.18s;
-}
-.toggle-theme-light:hover { background: var(--bg3); }
 
 /* ── Dot en vivo ──────────────────────────────────────────────── */
 .dot-live {
@@ -258,11 +244,45 @@ input, select, textarea, button { font-family: 'Inter', system-ui, sans-serif; }
   gap: 6px;
   background: var(--gold-bg);
   border: 1px solid var(--gold-border);
-  color: #8A6820;
+  color: #7A5C00;
   border-radius: var(--radius-pill);
   padding: 0.28rem 0.85rem;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+/* ── Spinner ──────────────────────────────────────────────────── */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+/* ── Chat bubble ──────────────────────────────────────────────── */
+.chat-bubble-ai {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0 12px 12px 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow);
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--ink2);
+  max-width: 560px;
+}
+.chat-bubble-user {
+  background: var(--red-tint);
+  border: 1px solid rgba(217,16,35,0.12);
+  border-radius: 12px 0 12px 12px;
+  padding: 1rem 1.25rem;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--ink);
+  max-width: 480px;
+  margin-left: auto;
 }

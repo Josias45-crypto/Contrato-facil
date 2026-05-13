@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { generarPDF } from '../utils/generarPDF'
 import { validarClave } from '../utils/claveHoraria'
 
@@ -387,7 +388,13 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas, modo = 'des
 }
 
 // ─── Componente principal ───────────────────────────────────────
-export default function Generador({ tipo, onVolver, theme, toggleTheme }) {
+export default function Generador() {
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const tipo = searchParams.get('tipo') || 'arrendamiento'
+  const onVolver = () => navigate('/')
+  const theme = 'light'
+  const toggleTheme = () => {}
   const [datos, setDatos] = useState({})
   const [clausulas, setClausulas] = useState([])
   const [notaExtra, setNotaExtra] = useState('')
