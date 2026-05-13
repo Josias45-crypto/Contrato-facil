@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { generarPDF } from '../utils/generarPDF'
+import { generarPDF, generarDOCX } from '../utils/generarPDF'
 import { validarClave } from '../utils/claveHoraria'
 
 // ─── Constantes ────────────────────────────────────────────────
@@ -157,13 +157,14 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo }) {
     setPaso('clave')
   }
 
-  const handleClave = (e) => {
+  const handleClave = async (e) => {
     const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')
     setClave(val)
     setClaveError(false)
     if (val.length === 4) {
       if (validarClave(val)) {
         generarPDF(contrato, titulo, null)
+        await generarDOCX(contrato, titulo)
         onDescarga()
       } else {
         setClaveError(true)
@@ -541,7 +542,7 @@ export default function Generador() {
                 onClick={() => setMostrarYape(true)}
                 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                ⬇ {descargado ? 'Descargar de nuevo' : 'Descargar — S/. 4.90'}
+                ⬇ {descargado ? 'Descargar de nuevo' : 'Descargar PDF + Word — S/. 4.90'}
               </button>
             </div>
           </div>
