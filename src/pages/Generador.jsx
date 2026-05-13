@@ -185,7 +185,7 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas }) {
     padding: '2rem',
     maxWidth: 400,
     width: '100%',
-    borderTop: '3px solid var(--red)',
+    borderTop: '3px solid var(--navy)',
     maxHeight: '92vh',
     overflowY: 'auto',
     boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
@@ -272,15 +272,15 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas }) {
           ].map((r, i, arr) => (
             <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: i < arr.length - 1 ? '0.5rem' : 0, marginBottom: i < arr.length - 1 ? '0.5rem' : 0, borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}>
               <span style={{ fontSize: '0.7rem', color: 'var(--ink3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.label}</span>
-              <span style={{ fontSize: r.grande ? '1.15rem' : '0.92rem', fontWeight: r.grande ? 800 : 600, color: r.grande ? 'var(--red)' : 'var(--ink)' }}>{r.value}</span>
+              <span style={{ fontSize: r.grande ? '1.15rem' : '0.92rem', fontWeight: r.grande ? 800 : 600, color: r.grande ? 'var(--navy)' : 'var(--ink)' }}>{r.value}</span>
             </div>
           ))}
         </div>
 
         {/* CTA persuasivo */}
         <div style={{
-          background: 'rgba(217,16,35,0.04)',
-          border: '1px solid rgba(217,16,35,0.12)',
+          background: 'var(--navy-tint)',
+          border: '1px solid rgba(27,58,107,0.14)',
           borderRadius: 10,
           padding: '0.75rem 1rem',
           marginBottom: '1rem',
@@ -291,7 +291,7 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas }) {
           <span style={{ fontSize: '1rem', flexShrink: 0 }}>📸</span>
           <p style={{ fontSize: '0.79rem', color: 'var(--ink2)', lineHeight: 1.55 }}>
             Yapea, toma captura del comprobante y mándasela a Joel por WhatsApp.
-            <strong style={{ color: 'var(--red)' }}> Recibes tu clave al instante.</strong>
+            <strong style={{ color: 'var(--navy)' }}> Recibes tu clave al instante.</strong>
           </p>
         </div>
 
@@ -399,7 +399,7 @@ export default function Generador() {
         </button>
         <span style={{ color: 'var(--border2)' }}>|</span>
         <span className="font-display" style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--ink)' }}>
-          Contrato<span style={{ color: 'var(--red)' }}>Fácil</span>
+          Contrato<span style={{ color: 'var(--gold)' }}>Fácil</span>
           <span style={{ fontWeight: 400, color: 'var(--ink3)', marginLeft: 8, fontSize: '0.8rem' }}>· {titulo}</span>
         </span>
       </div>
@@ -416,9 +416,9 @@ export default function Generador() {
           {/* Badge tipo */}
           <div style={{ marginBottom: '1.5rem' }}>
             <span style={{
-              background: 'var(--red-tint)',
-              color: 'var(--red)',
-              border: '1px solid rgba(217,16,35,0.15)',
+              background: 'var(--navy-tint)',
+              color: 'var(--navy)',
+              border: '1px solid rgba(27,58,107,0.18)',
               borderRadius: 999,
               padding: '0.28rem 0.85rem',
               fontSize: '0.72rem',
@@ -438,7 +438,7 @@ export default function Generador() {
               background: 'linear-gradient(135deg, #1A1A1A 0%, #3D3D3D 100%)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '1.1rem', flexShrink: 0,
-              border: '2px solid rgba(217,16,35,0.2)',
+              border: '2px solid rgba(27,58,107,0.25)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
             }}>
               ⚖️
@@ -475,7 +475,7 @@ export default function Generador() {
                     marginBottom: campo.hint ? '0.2rem' : '0.4rem',
                     lineHeight: 1.4,
                   }}>
-                    <span style={{ color: 'var(--red)', fontWeight: 700, marginRight: 5 }}>{i + 1}.</span>
+                    <span style={{ color: 'var(--navy)', fontWeight: 700, marginRight: 5 }}>{i + 1}.</span>
                     {campo.label}
                   </label>
                   {campo.hint && (
@@ -584,7 +584,7 @@ export default function Generador() {
                   background: 'linear-gradient(135deg, #1A1A1A 0%, #3D3D3D 100%)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '0.9rem', flexShrink: 0,
-                  border: '1.5px solid rgba(217,16,35,0.2)',
+                  border: '1.5px solid rgba(27,58,107,0.22)',
                 }}>
                   ⚖️
                 </div>
@@ -634,7 +634,7 @@ export default function Generador() {
         <div style={{
           background: '#fff',
           border: '1px solid var(--border)',
-          borderTop: '3px solid var(--red)',
+          borderTop: '3px solid var(--gold)',
           borderRadius: 'var(--radius)',
           padding: '2.5rem 3rem',
           whiteSpace: 'pre-wrap',

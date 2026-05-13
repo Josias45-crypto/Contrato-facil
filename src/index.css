@@ -1,46 +1,46 @@
 @import "tailwindcss";
 
-/* ── Tokens de diseño — paleta peruana ───────────────────────── */
+/* ── Tokens de diseño ─────────────────────────────────────────── */
 :root {
-  /* Primarios */
+  /* Paleta principal */
+  --navy:        #1B3A6B;
+  --navy-dark:   #142D55;
+  --navy-tint:   rgba(27, 58, 107, 0.07);
+  --gold:        #C9A84C;
+  --gold-bright: #DDB94C;
+  --gold-bg:     #FBF6E9;
+  --gold-border: #E5D49E;
+
+  /* Acento rojo (errores y detalles) */
   --red:         #D91023;
   --red-dark:    #B50D1C;
   --red-tint:    rgba(217, 16, 35, 0.07);
-  --gold:        #F5A623;
-  --gold-dark:   #D98F10;
-  --gold-tint:   rgba(245, 166, 35, 0.10);
-  --gold-bg:     #FFF9EE;
-  --gold-border: #F5D08A;
 
-  /* Neutrales */
-  --bg:          #FAFAFA;
-  --bg2:         #F5F5F5;
-  --bg3:         #EAEAEA;
+  /* Fondos */
+  --bg:          #FAFAF8;
+  --bg2:         #F3F2EE;
+  --bg3:         #E9E7E2;
   --surface:     #FFFFFF;
-  --ink:         #1A1A1A;
-  --ink2:        #3D3D3D;
+  --surface2:    #F7F6F2;
+
+  /* Tipografía */
+  --ink:         #2D2D2D;
+  --ink2:        #4A4A4A;
   --ink3:        #6B6B6B;
-  --ink4:        #9E9E9E;
+  --ink4:        #9B9B9B;
 
   /* Estado */
-  --green:       #1B8A4E;
-  --green-bg:    #E8F5ED;
+  --green:       #2E7D52;
+  --green-bg:    #EBF5F0;
 
   /* Layout */
-  --border:      rgba(0, 0, 0, 0.08);
-  --border2:     rgba(0, 0, 0, 0.14);
-  --shadow:      0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.07);
-  --shadow-lg:   0 4px 28px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.06);
+  --border:      rgba(0, 0, 0, 0.07);
+  --border2:     rgba(0, 0, 0, 0.13);
+  --shadow:      0 1px 4px rgba(27,58,107,0.06), 0 4px 14px rgba(27,58,107,0.07);
+  --shadow-lg:   0 4px 24px rgba(27,58,107,0.15), 0 1px 4px rgba(27,58,107,0.08);
   --radius:      12px;
   --radius-sm:   8px;
   --radius-pill: 999px;
-
-  /* Alias de compatibilidad para componentes existentes */
-  --navy:        #D91023;
-  --navy-dark:   #B50D1C;
-  --navy-tint:   rgba(217, 16, 35, 0.07);
-  --bg3:         #EAEAEA;
-  --border2:     rgba(0, 0, 0, 0.14);
 }
 
 /* ── Reset ────────────────────────────────────────────────────── */
@@ -92,9 +92,9 @@ input, select, textarea, button {
 .delay-9  { animation-delay: 0.58s; opacity: 0; }
 .delay-10 { animation-delay: 0.64s; opacity: 0; }
 
-/* ── Botón primario — rojo peruano ────────────────────────────── */
+/* ── Botón primario — azul marino ─────────────────────────────── */
 .btn-primary {
-  background: var(--red);
+  background: var(--navy);
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
@@ -104,14 +104,14 @@ input, select, textarea, button {
   cursor: pointer;
   transition: background 0.2s, transform 0.18s, box-shadow 0.2s;
   letter-spacing: 0.01em;
-  box-shadow: 0 2px 8px rgba(217,16,35,0.22);
+  box-shadow: 0 2px 8px rgba(27,58,107,0.22);
 }
 .btn-primary:hover {
-  background: var(--red-dark);
+  background: var(--navy-dark);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(217,16,35,0.32);
+  box-shadow: 0 6px 20px rgba(27,58,107,0.32);
 }
-.btn-primary:active  { transform: translateY(0); box-shadow: 0 2px 6px rgba(217,16,35,0.2); }
+.btn-primary:active  { transform: translateY(0); box-shadow: 0 2px 6px rgba(27,58,107,0.2); }
 .btn-primary:disabled {
   background: var(--bg3);
   color: var(--ink4);
@@ -133,9 +133,9 @@ input, select, textarea, button {
   transition: background 0.18s, border-color 0.18s, color 0.18s;
 }
 .btn-ghost:hover {
-  background: var(--red-tint);
-  border-color: var(--red);
-  color: var(--red);
+  background: var(--navy-tint);
+  border-color: var(--navy);
+  color: var(--navy);
 }
 
 /* ── Cards ────────────────────────────────────────────────────── */
@@ -167,8 +167,8 @@ input, select, textarea, button {
   transition: border-color 0.18s, box-shadow 0.18s;
 }
 .input-field:focus {
-  border-color: var(--red);
-  box-shadow: 0 0 0 3px rgba(217,16,35,0.09);
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(27,58,107,0.11);
 }
 .input-field::placeholder { color: var(--ink4); }
 
@@ -185,9 +185,9 @@ input, select, textarea, button {
   font-weight: 500;
 }
 .tag-clausula.activo {
-  border-color: var(--red);
-  background: var(--red-tint);
-  color: var(--red);
+  border-color: var(--navy);
+  background: var(--navy-tint);
+  color: var(--navy);
   font-weight: 600;
 }
 
