@@ -3,230 +3,156 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { generarPDF } from '../utils/generarPDF'
 import { validarClave } from '../utils/claveHoraria'
 
-const clausulasExtra = {
-  alquiler: ['No se permiten mascotas', 'No se permite subarrendar', 'Mantenimiento a cargo del inquilino', 'Servicios incluidos en renta', 'Garantía de 1 mes', 'Prohibido uso comercial', 'Inspección mensual permitida'],
-  compraventa: ['Venta al contado', 'Bien libre de cargas', 'Garantía de 30 días', 'Transferencia inmediata', 'Pago en cuotas', 'Se incluye inventario', 'Sin devoluciones'],
-  servicios: ['Pago al finalizar', '50% de adelanto', 'Revisiones ilimitadas', 'Confidencialidad total', 'Penalidad por cancelación', 'Derechos de autor al cliente', 'Entrega por etapas'],
-  libre: [],
-}
-
-const camposPor = {
-  alquiler: [
-    { id: 'arrendador', label: 'Nombre completo del propietario', placeholder: 'Juan Pérez García', required: true },
-    { id: 'dni_arrendador', label: 'DNI del propietario', placeholder: '12345678', optional: true },
-    { id: 'arrendatario', label: 'Nombre completo del inquilino', placeholder: 'María López Torres', required: true },
-    { id: 'dni_arrendatario', label: 'DNI del inquilino', placeholder: '87654321', optional: true },
-    { id: 'direccion', label: 'Dirección del inmueble', placeholder: 'Jr. Las Flores 123, Miraflores, Lima', required: true },
-    { id: 'monto', label: 'Alquiler mensual (S/.)', placeholder: '1500', required: true },
-    { id: 'duracion', label: 'Duración del contrato', placeholder: '12 meses', required: true },
-    { id: 'fecha', label: 'Fecha de inicio', placeholder: '01 de enero del 2026', required: true },
-  ],
-  compraventa: [
-    { id: 'vendedor', label: 'Nombre completo del vendedor', placeholder: 'Juan Pérez García', required: true },
-    { id: 'dni_vendedor', label: 'DNI del vendedor', placeholder: '12345678', optional: true },
-    { id: 'comprador', label: 'Nombre completo del comprador', placeholder: 'María López Torres', required: true },
-    { id: 'dni_comprador', label: 'DNI del comprador', placeholder: '87654321', optional: true },
-    { id: 'bien', label: 'Descripción detallada del bien', placeholder: 'Toyota Yaris 2020, placa ABC-123, color blanco', required: true },
-    { id: 'precio', label: 'Precio de venta (S/.)', placeholder: '25000', required: true },
-    { id: 'fecha', label: 'Fecha de la transacción', placeholder: '01 de enero del 2026', required: true },
-  ],
-  servicios: [
-    { id: 'contratante', label: 'Nombre del cliente o empresa', placeholder: 'Empresa SAC', required: true },
-    { id: 'dni_contratante', label: 'DNI / RUC del cliente', placeholder: '12345678', optional: true },
-    { id: 'proveedor', label: 'Nombre del proveedor de servicios', placeholder: 'Juan Pérez García', required: true },
-    { id: 'dni_proveedor', label: 'DNI del proveedor', placeholder: '87654321', optional: true },
-    { id: 'servicio', label: 'Descripción detallada del servicio', placeholder: 'Diseño de identidad corporativa: logo, colores y manual de marca', required: true },
-    { id: 'monto', label: 'Monto total del servicio (S/.)', placeholder: '3000', required: true },
-    { id: 'plazo', label: 'Plazo de entrega', placeholder: '30 días calendario', required: true },
-    { id: 'fecha', label: 'Fecha de inicio', placeholder: '01 de enero del 2026', required: true },
-  ],
-  libre: [
-    { id: 'titulo_doc', label: '¿Qué tipo de documento necesitas?', placeholder: 'Ej: Carta de compromiso, Acuerdo de confidencialidad, Declaración jurada...', required: true },
-    { id: 'parte1', label: 'Primera parte (nombre completo)', placeholder: 'Juan Pérez García', required: true },
-    { id: 'parte2', label: 'Segunda parte (opcional)', placeholder: 'María López Torres o Empresa SAC', optional: true },
-    { id: 'descripcion', label: 'Describe lo que necesitas en el documento', placeholder: 'Quiero un acuerdo donde Juan se compromete a entregar el vehículo el 15 de enero...', required: true },
-    { id: 'fecha', label: 'Fecha del documento', placeholder: '01 de enero del 2026', required: true },
-  ],
-}
+// ─── Constantes ────────────────────────────────────────────────
+const SYSTEM_PROMPT = `Eres el Dr. Alejandro Quispe Morales, abogado peruano colegiado con 25 años de experiencia en derecho civil, laboral y contractual. Legislación peruana vigente 2026.
+REGLAS ABSOLUTAS: Solo español jurídico formal peruano. NUNCA inventes datos — si falta alguno escribe [DATO PENDIENTE]. Estructura: título centrado en mayúsculas, datos de las partes, cláusulas numeradas (CLÁUSULA PRIMERA, SEGUNDA...), cita los artículos del Código Civil (D.Leg.295) y leyes aplicables. Al final: lugar, fecha actual, líneas para firma y huella digital de ambas partes. PROHIBIDO: markdown, asteriscos, guiones como viñetas, negritas.`
 
 const titulos = {
-  alquiler: 'Contrato de Arrendamiento',
-  compraventa: 'Contrato de Compraventa',
-  servicios: 'Contrato de Prestación de Servicios',
-  libre: 'Documento Personalizado',
+  arrendamiento:  'Contrato de Arrendamiento',
+  compraventa:    'Contrato de Compraventa',
+  servicios:      'Contrato de Prestación de Servicios',
+  trabajo:        'Contrato de Trabajo',
+  locacion:       'Locación de Servicios',
+  prestamo:       'Préstamo de Dinero',
+  dj_simple:      'Declaración Jurada Simple',
+  dj_domicilio:   'Declaración Jurada de Domicilio',
+  carta_poder:    'Carta Poder Simple',
+  viaje_menor:    'Autorización de Viaje de Menor',
 }
 
-function buildPrompt(tipo, datos, clausulas, notaExtra, clausulaPersonalizada) {
-  const campos = camposPor[tipo] || []
-  const datosStr = campos.filter(c => datos[c.id]).map(c => `${c.label}: ${datos[c.id]}`).join('\n')
-  const clausulasExtra = clausulas.length > 0
-    ? `\nCLÁUSULAS ADICIONALES REQUERIDAS POR EL CLIENTE:\n${clausulas.map(c => `- ${c}`).join('\n')}`
-    : ''
-  const notaStr = notaExtra ? `\nINDICACIONES ADICIONALES DEL CLIENTE: ${notaExtra}` : ''
-  const clausulaStr = clausulaPersonalizada
-    ? `\nCLÁUSULA PERSONALIZADA A INCORPORAR TEXTUALMENTE: "${clausulaPersonalizada}"`
-    : ''
+const preguntas = {
+  arrendamiento: `Hola, voy a ayudarte a redactar tu Contrato de Arrendamiento conforme al Código Civil peruano (art. 1666°).
 
-  const REGLAS_COMUNES = `
-REGLAS DE REDACCIÓN OBLIGATORIAS:
-- Texto plano exclusivamente. PROHIBIDO usar asteriscos, guiones como viñetas, markdown, corchetes ni símbolos especiales.
-- Todos los títulos de sección en MAYÚSCULAS sostenidas.
-- Lenguaje jurídico formal peruano en todo momento. Nada de lenguaje coloquial.
-- Citar artículos del Código Civil peruano (D. Leg. N° 295) donde corresponda.
-- NO incluir líneas de firma, guiones, puntos suspensivos ni espacio para rúbricas al final. El bloque de firmas se agrega por separado.
-- Terminar el texto con el párrafo de cierre "En señal de conformidad..." seguido de ciudad y fecha.`
+Por favor indícame lo siguiente en un solo mensaje:
 
-  if (tipo === 'alquiler') {
-    return `Eres un abogado peruano colegiado, especialista en derecho civil e inmobiliario, con 20 años de experiencia litigando ante juzgados civiles de Lima. Redacta un CONTRATO DE ARRENDAMIENTO completo, al amparo del artículo 1666° y siguientes del Código Civil peruano (D. Leg. N° 295).
+1. Nombre completo y DNI del propietario (arrendador)
+2. Dirección del domicilio del propietario
+3. Nombre completo y DNI del inquilino (arrendatario)
+4. Dirección del domicilio del inquilino
+5. Dirección exacta del inmueble: calle, número, distrito, provincia, departamento
+6. Uso del inmueble: vivienda o comercial
+7. Monto mensual del alquiler en S/.
+8. Forma de pago (efectivo / transferencia / depósito bancario)
+9. Fecha de inicio del contrato
+10. Duración en meses o fecha de vencimiento
+11. Meses de garantía (depósito de seguridad)`,
 
-DATOS DEL CONTRATO:
-${datosStr}
-${clausulasExtra}${notaStr}${clausulaStr}
+  compraventa: `Hola, voy a ayudarte a redactar tu Contrato de Compraventa conforme al Código Civil peruano (art. 1529°).
 
-ESTRUCTURA OBLIGATORIA (en este orden exacto):
+Por favor indícame lo siguiente en un solo mensaje:
 
-CONTRATO DE ARRENDAMIENTO
-[Ciudad], [fecha completa]
+1. Nombre completo, DNI y domicilio del vendedor
+2. Nombre completo, DNI y domicilio del comprador
+3. Descripción detallada del bien (qué se vende, características, estado)
+4. Estado del bien: nuevo o usado
+5. Precio de venta en S/.
+6. Forma de pago (efectivo / transferencia / cuotas — si cuotas: número y monto de cada una)
+7. Fecha de entrega del bien
+8. Distrito y ciudad donde se firma el contrato`,
 
-IDENTIFICACIÓN DE LAS PARTES
-Presentar a cada parte con la fórmula: "De una parte, [nombre completo], identificado(a) con Documento Nacional de Identidad N° [DNI], a quien en lo sucesivo se denominará EL ARRENDADOR; y, de la otra parte, [nombre completo], identificado(a) con DNI N° [DNI], a quien en lo sucesivo se denominará EL ARRENDATARIO."
+  servicios: `Hola, voy a ayudarte a redactar tu Contrato de Prestación de Servicios conforme al Código Civil peruano (art. 1764°).
 
-ANTECEDENTES
-Párrafo declarando que el arrendador es propietario o tiene legítima posesión del inmueble y su voluntad de cederlo en arrendamiento.
+Por favor indícame lo siguiente en un solo mensaje:
 
-CLÁUSULA PRIMERA: OBJETO DEL CONTRATO
-CLÁUSULA SEGUNDA: VIGENCIA Y PLAZO
-CLÁUSULA TERCERA: RENTA MENSUAL
-CLÁUSULA CUARTA: FORMA Y CONDICIONES DE PAGO
-CLÁUSULA QUINTA: OBLIGACIONES DEL ARRENDADOR
-CLÁUSULA SEXTA: OBLIGACIONES DEL ARRENDATARIO
-CLÁUSULA SÉPTIMA: PENALIDADES POR INCUMPLIMIENTO (incluir interés legal si hay mora)
-CLÁUSULA OCTAVA: CAUSALES DE RESOLUCIÓN DEL CONTRATO
-CLÁUSULA NOVENA: MECANISMO DE SOLUCIÓN DE CONTROVERSIAS (conciliación extrajudicial y juzgado competente)
-CLÁUSULA DÉCIMA: DISPOSICIONES FINALES (domicilios para notificaciones, validez de copias)
-${clausulas.length > 0 ? 'CLÁUSULA ADICIONAL: incorporar las cláusulas adicionales solicitadas como artículos independientes numerados.' : ''}
+1. Nombre o razón social, DNI o RUC y domicilio del contratante
+2. Nombre completo, DNI y domicilio del prestador del servicio
+3. Descripción detallada del servicio a realizar
+4. Monto total en S/.
+5. Forma de pago (por adelantado / al finalizar / en hitos)
+6. Fecha de inicio
+7. Plazo de entrega o fecha de fin
+8. ¿Incluye materiales o solo mano de obra?
+9. Lugar de prestación del servicio`,
 
-CIERRE
-Terminar con: "En señal de conformidad con todos y cada uno de los términos del presente instrumento, las partes contratantes lo suscriben en [ciudad], a los [día] días del mes de [mes] del año [año]."
+  trabajo: `Hola, voy a ayudarte a redactar tu Contrato de Trabajo conforme al D.L. 728 — Ley de Productividad y Competitividad Laboral.
 
-${REGLAS_COMUNES}
+Por favor indícame lo siguiente en un solo mensaje:
 
-Redacta el contrato completo:`
-  }
+1. Razón social, RUC y domicilio del empleador
+2. Nombre completo, DNI y domicilio del trabajador
+3. Cargo o puesto de trabajo
+4. Remuneración mensual en S/.
+5. Fecha de inicio
+6. Modalidad: indefinido o plazo fijo — si es plazo fijo indicar fecha de fin
+7. Jornada laboral (horas por semana)
+8. Lugar de trabajo (dirección y distrito)`,
 
-  if (tipo === 'compraventa') {
-    return `Eres un abogado peruano colegiado, especialista en derecho patrimonial y contratos de transferencia, con 20 años de experiencia. Redacta un CONTRATO DE COMPRAVENTA completo, al amparo del artículo 1529° y siguientes del Código Civil peruano (D. Leg. N° 295).
+  locacion: `Hola, voy a ayudarte a redactar tu Contrato de Locación de Servicios conforme al Código Civil peruano (art. 1764°).
 
-DATOS DEL CONTRATO:
-${datosStr}
-${clausulasExtra}${notaStr}${clausulaStr}
+Por favor indícame lo siguiente en un solo mensaje:
 
-ESTRUCTURA OBLIGATORIA (en este orden exacto):
+1. Nombre o empresa, DNI o RUC del comitente (quien contrata)
+2. Nombre completo y DNI del locador (quien presta el servicio)
+3. Descripción del servicio profesional u oficio
+4. Honorarios en S/.
+5. Forma de pago
+6. Plazo de ejecución
+7. Entregables esperados`,
 
-CONTRATO DE COMPRAVENTA
-[Ciudad], [fecha completa]
+  prestamo: `Hola, voy a ayudarte a redactar tu Contrato de Préstamo de Dinero (Mutuo Dinerario) conforme al Código Civil peruano (art. 1648°).
 
-IDENTIFICACIÓN DE LAS PARTES
-"De una parte, [nombre completo], identificado(a) con DNI N° [DNI], a quien en lo sucesivo se denominará EL VENDEDOR; y, de la otra parte, [nombre completo], identificado(a) con DNI N° [DNI], a quien en lo sucesivo se denominará EL COMPRADOR."
+Por favor indícame lo siguiente en un solo mensaje:
 
-DECLARACIONES PREVIAS
-Párrafo donde el vendedor declara ser propietario legítimo del bien y que éste se encuentra libre de cargas, gravámenes, hipotecas, embargos u otro tipo de afectación que impida su libre disposición, salvo que se indique lo contrario.
+1. Nombre completo, DNI y domicilio del prestamista
+2. Nombre completo, DNI y domicilio del prestatario
+3. Monto del préstamo en S/.
+4. Fecha de entrega del dinero
+5. Fecha de devolución
+6. ¿Con intereses? Sí o No — si sí, indicar la tasa
+7. Forma de devolución: pago único o cuotas — si cuotas: número y monto`,
 
-CLÁUSULA PRIMERA: OBJETO DE LA COMPRAVENTA (descripción detallada e inequívoca del bien)
-CLÁUSULA SEGUNDA: PRECIO Y FORMA DE PAGO
-CLÁUSULA TERCERA: TRANSFERENCIA DE PROPIEDAD Y TRADICIÓN (art. 947° o 949° C.C. según corresponda)
-CLÁUSULA CUARTA: SANEAMIENTO POR EVICCIÓN (art. 1484° C.C.)
-CLÁUSULA QUINTA: DECLARACIÓN DE CARGAS Y GRAVÁMENES
-CLÁUSULA SEXTA: OBLIGACIONES DEL VENDEDOR
-CLÁUSULA SÉPTIMA: OBLIGACIONES DEL COMPRADOR
-CLÁUSULA OCTAVA: PENALIDADES POR INCUMPLIMIENTO
-CLÁUSULA NOVENA: RESOLUCIÓN DEL CONTRATO
-CLÁUSULA DÉCIMA: SOLUCIÓN DE CONTROVERSIAS
-CLÁUSULA UNDÉCIMA: DISPOSICIONES FINALES
-${clausulas.length > 0 ? 'CLÁUSULA ADICIONAL: incorporar las cláusulas adicionales solicitadas como artículos independientes numerados.' : ''}
+  dj_simple: `Hola, voy a ayudarte a redactar tu Declaración Jurada Simple.
 
-CIERRE
-"En señal de conformidad con todos y cada uno de los términos del presente instrumento, las partes contratantes lo suscriben en [ciudad], a los [día] días del mes de [mes] del año [año]."
+Por favor indícame lo siguiente en un solo mensaje:
 
-${REGLAS_COMUNES}
+1. Nombre completo y DNI del declarante
+2. Domicilio del declarante
+3. Hecho que declara (descríbelo con detalle)
+4. Motivo o destino del documento (para qué trámite o entidad)
+5. Lugar y fecha de la declaración`,
 
-Redacta el contrato completo:`
-  }
+  dj_domicilio: `Hola, voy a ayudarte a redactar tu Declaración Jurada de Domicilio.
 
-  if (tipo === 'servicios') {
-    return `Eres un abogado peruano colegiado, especialista en derecho de obligaciones y contratos de servicios empresariales, con 20 años de experiencia. Redacta un CONTRATO DE PRESTACIÓN DE SERVICIOS completo, al amparo del artículo 1764° y siguientes del Código Civil peruano (D. Leg. N° 295).
+Por favor indícame lo siguiente en un solo mensaje:
 
-DATOS DEL CONTRATO:
-${datosStr}
-${clausulasExtra}${notaStr}${clausulaStr}
+1. Nombre completo y DNI del declarante
+2. Dirección exacta que declara como domicilio: calle, número, departamento (si aplica)
+3. Distrito, provincia y departamento
+4. Motivo o entidad a la que va dirigida (para qué trámite)
+5. Lugar y fecha de la declaración`,
 
-ESTRUCTURA OBLIGATORIA (en este orden exacto):
+  carta_poder: `Hola, voy a ayudarte a redactar tu Carta Poder Simple.
 
-CONTRATO DE PRESTACIÓN DE SERVICIOS
-[Ciudad], [fecha completa]
+Por favor indícame lo siguiente en un solo mensaje:
 
-IDENTIFICACIÓN DE LAS PARTES
-"De una parte, [nombre o razón social], identificado(a) con DNI/RUC N° [número], a quien en lo sucesivo se denominará EL COMITENTE; y, de la otra parte, [nombre completo], identificado(a) con DNI N° [DNI], a quien en lo sucesivo se denominará EL PRESTADOR DE SERVICIOS."
+1. Nombre completo, DNI y domicilio del poderdante (quien otorga el poder)
+2. Nombre completo, DNI y domicilio del apoderado (quien actúa en su nombre)
+3. Facultades otorgadas: ¿qué puede hacer exactamente el apoderado?
+4. Vigencia del poder (fecha de vencimiento o si es indefinido)
+5. Lugar y fecha`,
 
-ANTECEDENTES
-Párrafo indicando que el comitente requiere los servicios profesionales del prestador y que éste declara tener la capacidad, experiencia y conocimientos necesarios para ejecutarlos.
+  viaje_menor: `Hola, voy a ayudarte a redactar la Autorización de Viaje de Menor de Edad.
 
-CLÁUSULA PRIMERA: OBJETO DEL CONTRATO (descripción precisa y detallada del servicio)
-CLÁUSULA SEGUNDA: PLAZO DE EJECUCIÓN Y CRONOGRAMA DE ENTREGABLES
-CLÁUSULA TERCERA: CONTRAPRESTACIÓN ECONÓMICA
-CLÁUSULA CUARTA: CONDICIONES DE PAGO (hitos, anticipos, pagos a la entrega)
-CLÁUSULA QUINTA: OBLIGACIONES DEL PRESTADOR DE SERVICIOS
-CLÁUSULA SEXTA: OBLIGACIONES DEL COMITENTE
-CLÁUSULA SÉPTIMA: CONFIDENCIALIDAD Y PROPIEDAD INTELECTUAL (precisar titularidad de entregables)
-CLÁUSULA OCTAVA: PENALIDADES POR INCUMPLIMIENTO O DEMORA
-CLÁUSULA NOVENA: CAUSALES Y PROCEDIMIENTO DE RESOLUCIÓN
-CLÁUSULA DÉCIMA: INDEPENDENCIA DE LAS PARTES (no relación laboral)
-CLÁUSULA UNDÉCIMA: SOLUCIÓN DE CONTROVERSIAS
-CLÁUSULA DUODÉCIMA: DISPOSICIONES FINALES
-${clausulas.length > 0 ? 'CLÁUSULA ADICIONAL: incorporar las cláusulas adicionales solicitadas como artículos independientes numerados.' : ''}
+Por favor indícame lo siguiente en un solo mensaje:
 
-CIERRE
-"En señal de conformidad con todos y cada uno de los términos del presente instrumento, las partes contratantes lo suscriben en [ciudad], a los [día] días del mes de [mes] del año [año]."
-
-${REGLAS_COMUNES}
-
-Redacta el contrato completo:`
-  }
-
-  // tipo === 'libre'
-  return `Eres un abogado peruano colegiado con 20 años de experiencia en derecho civil y notarial. Redacta el siguiente documento jurídico de manera completamente profesional y formal, conforme a la legislación peruana vigente.
-
-DATOS DEL DOCUMENTO:
-${datosStr}
-${notaStr}
-
-INSTRUCCIONES DE REDACCIÓN:
-
-1. ENCABEZADO: Título del documento en MAYÚSCULAS, ciudad y fecha.
-
-2. IDENTIFICACIÓN DE PARTES: Usar fórmula formal: "[nombre completo], identificado(a) con DNI N° [número], con domicilio en [lugar si se conoce], a quien en lo sucesivo se denominará [denominación]."
-
-3. CUERPO DEL DOCUMENTO: Organizar en cláusulas o secciones numeradas según la naturaleza del documento. Emplear expresiones jurídicas formales peruanas tales como: "al amparo de la legislación vigente", "las partes contratantes acuerdan", "en pleno uso de sus facultades legales", "con sujeción a lo establecido en el Código Civil peruano", "en mérito a lo expuesto", "en consecuencia", "sin perjuicio de lo anterior".
-
-4. DISPOSICIONES FINALES: Incluir cláusula de domicilios para notificaciones y mecanismo de solución de controversias si aplica.
-
-5. CIERRE: "En señal de conformidad con el contenido del presente documento, las partes lo suscriben en [ciudad], a los [día] días del mes de [mes] del año [año]."
-
-${REGLAS_COMUNES}
-
-Redacta el documento completo:`
+1. Nombre completo y DNI del padre, madre o tutor que autoriza
+2. Nombre completo y DNI (o número de partida de nacimiento) del menor
+3. Destino del viaje (ciudad y país)
+4. Fecha de salida
+5. Fecha de retorno
+6. Adulto acompañante (nombre y DNI, si aplica) — o si viaja solo
+7. Motivo del viaje
+8. Lugar y fecha del documento`,
 }
 
 // ─── Modal de Yape ─────────────────────────────────────────────
-function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas, modo = 'descarga', subtitulo }) {
-  const [paso, setPaso] = useState('pago') // 'pago' | 'clave'
+function ModalYape({ onCerrar, onDescarga, contrato, titulo }) {
+  const [paso, setPaso] = useState('pago')
   const [clave, setClave] = useState('')
   const [claveError, setClaveError] = useState(false)
 
   const abrirWhatsApp = () => {
-    const msg = encodeURIComponent(
-      'Hola Joel, acabo de yapear S/.4.90 por mi contrato. Por favor envíame la clave de descarga.'
-    )
+    const msg = encodeURIComponent('Hola Joel, acabo de yapear S/.4.90 por mi contrato. Por favor envíame la clave de descarga.')
     window.open(`https://wa.me/51929201444?text=${msg}`, '_blank')
     setPaso('clave')
   }
@@ -237,7 +163,7 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas, modo = 'des
     setClaveError(false)
     if (val.length === 4) {
       if (validarClave(val)) {
-        if (modo === 'descarga') generarPDF(contrato, titulo, firmas)
+        generarPDF(contrato, titulo, null)
         onDescarga()
       } else {
         setClaveError(true)
@@ -247,38 +173,37 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas, modo = 'des
 
   const overlay = {
     position: 'fixed', inset: 0,
-    background: 'rgba(14,26,52,0.65)',
+    background: 'rgba(0,0,0,0.5)',
     backdropFilter: 'blur(4px)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     zIndex: 100, padding: '1rem',
   }
   const card = {
-    background: 'var(--surface)',
+    background: '#fff',
     borderRadius: 16,
     padding: '2rem',
     maxWidth: 400,
     width: '100%',
     border: '1px solid var(--border)',
-    borderTop: '3px solid var(--navy)',
+    borderTop: '3px solid var(--red)',
     maxHeight: '90vh',
     overflowY: 'auto',
-    boxShadow: '0 20px 60px rgba(14,26,52,0.25)',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
   }
 
   if (paso === 'clave') {
     return (
-      <div style={overlay}>
+      <div style={overlay} onClick={e => e.target === e.currentTarget && onCerrar()}>
         <div style={card}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--navy-tint)', border: '2px solid var(--navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.5rem' }}>🔑</div>
-            <h3 className="font-display" style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.4rem' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔑</div>
+            <h3 className="font-display" style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.4rem' }}>
               Ingresa tu clave de descarga
             </h3>
             <p style={{ fontSize: '0.83rem', color: 'var(--ink3)', lineHeight: 1.65 }}>
-              Joel te enviará una clave de 4 caracteres<br />por WhatsApp para desbloquear tu PDF.
+              Joel te enviará una clave de 4 caracteres<br />por WhatsApp para desbloquear tu descarga.
             </p>
           </div>
-
           <input
             autoFocus
             className="input-field"
@@ -289,38 +214,29 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas, modo = 'des
             onChange={handleClave}
             maxLength={4}
             style={{
-              width: '100%',
-              fontSize: '2.8rem',
+              fontSize: '2.5rem',
               fontWeight: 800,
               letterSpacing: '0.5em',
               textAlign: 'center',
               padding: '1rem',
               fontFamily: 'monospace',
-              borderColor: claveError ? '#C0392B' : clave.length === 4 ? 'var(--green)' : undefined,
-              boxShadow: claveError ? '0 0 0 3px rgba(192,57,43,0.12)' : clave.length === 4 ? '0 0 0 3px rgba(46,125,82,0.12)' : undefined,
+              borderColor: claveError ? '#D91023' : clave.length === 4 ? 'var(--green)' : undefined,
               textTransform: 'uppercase',
             }}
           />
-
           {claveError && (
-            <p style={{ color: '#C0392B', fontSize: '0.82rem', textAlign: 'center', marginTop: '0.6rem', fontWeight: 500 }}>
+            <p style={{ color: '#D91023', fontSize: '0.82rem', textAlign: 'center', marginTop: '0.6rem', fontWeight: 500 }}>
               Clave incorrecta. Pídele a Joel que te reenvíe la clave actual.
             </p>
           )}
-
           {!claveError && clave.length < 4 && (
-            <p style={{ color: 'var(--ink3)', fontSize: '0.75rem', textAlign: 'center', marginTop: '0.6rem' }}>
-              La descarga se activa automáticamente al ingresar los 4 caracteres correctos
+            <p style={{ color: 'var(--ink4)', fontSize: '0.75rem', textAlign: 'center', marginTop: '0.6rem' }}>
+              La descarga se activa automáticamente al ingresar los 4 caracteres correctos.
             </p>
           )}
-
           <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.6rem' }}>
-            <button className="btn-ghost" style={{ flex: 1 }} onClick={() => { setPaso('pago'); setClave(''); setClaveError(false) }}>
-              ← Atrás
-            </button>
-            <button className="btn-ghost" style={{ flex: 1 }} onClick={onCerrar}>
-              Cancelar
-            </button>
+            <button className="btn-ghost" style={{ flex: 1 }} onClick={() => { setPaso('pago'); setClave(''); setClaveError(false) }}>← Atrás</button>
+            <button className="btn-ghost" style={{ flex: 1 }} onClick={onCerrar}>Cancelar</button>
           </div>
         </div>
       </div>
@@ -328,57 +244,40 @@ function ModalYape({ onCerrar, onDescarga, contrato, titulo, firmas, modo = 'des
   }
 
   return (
-    <div style={overlay}>
+    <div style={overlay} onClick={e => e.target === e.currentTarget && onCerrar()}>
       <div style={card}>
-        {/* Cabecera de confianza */}
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>🔒</span>
-            <h3 className="font-display" style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--ink)' }}>
-              Pago seguro con Yape
-            </h3>
-          </div>
+          <div style={{ fontSize: '1.1rem', marginBottom: '0.4rem' }}>🔒</div>
+          <h3 className="font-display" style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.3rem' }}>
+            Descarga tu documento
+          </h3>
           <p style={{ fontSize: '0.82rem', color: 'var(--ink3)' }}>
-            {subtitulo || 'Realiza el pago para descargar tu contrato en PDF'}
+            Yapea S/.4.90 y recibe tu clave al instante por WhatsApp
           </p>
         </div>
 
-        {/* QR */}
         <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-          <div style={{ display: 'inline-block', padding: 8, background: '#fff', borderRadius: 14, border: '2px solid var(--border2)', boxShadow: '0 4px 12px rgba(27,58,107,0.1)' }}>
-            <img
-              src="/yape-qr.webp"
-              alt="QR Yape"
-              style={{ width: 160, height: 160, borderRadius: 8, objectFit: 'contain', display: 'block' }}
-            />
+          <div style={{ display: 'inline-block', padding: 8, background: '#fff', borderRadius: 14, border: '2px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+            <img src="/yape-qr.webp" alt="QR Yape" style={{ width: 160, height: 160, borderRadius: 8, objectFit: 'contain', display: 'block' }} />
           </div>
         </div>
 
-        {/* Datos de pago */}
-        <div style={{ background: 'var(--bg2)', borderRadius: 10, padding: '1rem 1.25rem', marginBottom: '1.5rem', border: '1px solid var(--border2)', borderLeft: '3px solid var(--gold)' }}>
+        <div style={{ background: 'var(--bg2)', borderRadius: 10, padding: '1rem 1.25rem', marginBottom: '1.5rem', border: '1px solid var(--border)', borderLeft: '3px solid var(--gold)' }}>
           <div style={{ display: 'grid', gap: '0.6rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--ink3)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Número</span>
-              <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.06em' }}>929 201 444</span>
-            </div>
-            <div style={{ height: 1, background: 'var(--border)' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--ink3)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Nombre</span>
-              <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--ink)' }}>Joel Rojas Alca</span>
-            </div>
-            <div style={{ height: 1, background: 'var(--border)' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--ink3)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Monto</span>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--navy)' }}>S/. 4.90</span>
-            </div>
+            {[
+              { label: 'Número', value: '929 201 444' },
+              { label: 'Nombre',  value: 'Joel Rojas Alca' },
+              { label: 'Monto',   value: 'S/. 4.90', big: true },
+            ].map(row => (
+              <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--ink3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{row.label}</span>
+                <span style={{ fontSize: row.big ? '1.2rem' : '0.95rem', fontWeight: row.big ? 800 : 600, color: row.big ? 'var(--red)' : 'var(--ink)' }}>{row.value}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        <button
-          className="btn-primary"
-          style={{ width: '100%', marginBottom: '0.6rem', fontSize: '0.97rem' }}
-          onClick={abrirWhatsApp}
-        >
+        <button className="btn-primary" style={{ width: '100%', marginBottom: '0.6rem' }} onClick={abrirWhatsApp}>
           📱 Enviar comprobante por WhatsApp
         </button>
         <button className="btn-ghost" style={{ width: '100%' }} onClick={onCerrar}>Cancelar</button>
@@ -392,266 +291,327 @@ export default function Generador() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const tipo = searchParams.get('tipo') || 'arrendamiento'
-  const onVolver = () => navigate('/')
-  const theme = 'light'
-  const toggleTheme = () => {}
-  const [datos, setDatos] = useState({})
-  const [clausulas, setClausulas] = useState([])
-  const [notaExtra, setNotaExtra] = useState('')
-  const [clausulaPersonalizada, setClausulaPersonalizada] = useState('')
+  const titulo = titulos[tipo] || 'Documento Legal'
+  const pregunta = preguntas[tipo] || preguntas.arrendamiento
+
+  const [respuesta, setRespuesta] = useState('')
   const [contrato, setContrato] = useState('')
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
-  const [paso, setPaso] = useState(1)
+  const [edicionesRestantes, setEdicionesRestantes] = useState(1)
+  const [mostrarEditar, setMostrarEditar] = useState(false)
+  const [textoCorreccion, setTextoCorreccion] = useState('')
+  const [cargandoEdicion, setCargandoEdicion] = useState(false)
   const [mostrarYape, setMostrarYape] = useState(false)
-  const [modoYape, setModoYape] = useState('descarga')
   const [descargado, setDescargado] = useState(false)
-  const [edicionesUsadas, setEdicionesUsadas] = useState(() =>
-    parseInt(localStorage.getItem('cf_ediciones') || '0', 10)
-  )
-  const MAX_EDICIONES = 3
-  const edicionesRestantes = MAX_EDICIONES - edicionesUsadas
 
-  const campos = camposPor[tipo] || []
-  const clausulasOpciones = clausulasExtra[tipo] || []
-  const progreso = contrato ? 100 : paso === 2 ? 66 : 33
-
-  const toggleClausula = (c) => setClausulas(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])
-  const handleChange = (id, value) => setDatos(prev => ({ ...prev, [id]: value }))
-
-  const getFirmas = () => {
-    const d = datos
-    if (tipo === 'alquiler') return [
-      { rol: 'ARRENDADOR', nombre: d.arrendador || '', dni: d.dni_arrendador || '' },
-      { rol: 'ARRENDATARIO', nombre: d.arrendatario || '', dni: d.dni_arrendatario || '' },
-    ]
-    if (tipo === 'compraventa') return [
-      { rol: 'VENDEDOR', nombre: d.vendedor || '', dni: d.dni_vendedor || '' },
-      { rol: 'COMPRADOR', nombre: d.comprador || '', dni: d.dni_comprador || '' },
-    ]
-    if (tipo === 'servicios') return [
-      { rol: 'CONTRATANTE', nombre: d.contratante || '', dni: d.dni_contratante || '' },
-      { rol: 'PROVEEDOR DE SERVICIOS', nombre: d.proveedor || '', dni: d.dni_proveedor || '' },
-    ]
-    if (tipo === 'libre' && d.parte1) return [
-      { rol: 'PRIMERA PARTE', nombre: d.parte1 || '', dni: '' },
-      { rol: 'SEGUNDA PARTE', nombre: d.parte2 || '', dni: '' },
-    ]
-    return null
-  }
-
-  const handleEditar = () => {
-    if (edicionesUsadas >= MAX_EDICIONES) {
-      setModoYape('edicion')
-      setMostrarYape(true)
-      return
-    }
-    const nuevas = edicionesUsadas + 1
-    setEdicionesUsadas(nuevas)
-    localStorage.setItem('cf_ediciones', String(nuevas))
-    setContrato('')
-    setPaso(1)
-  }
-
-  const handleDescarga = () => {
-    setMostrarYape(false)
-    setDescargado(true)
-    setEdicionesUsadas(0)
-    localStorage.setItem('cf_ediciones', '0')
-    if (modoYape === 'edicion') {
-      setContrato('')
-      setPaso(1)
-    }
-  }
-
-  const avanzarPaso = () => {
-    const requeridos = campos.filter(c => c.required && !datos[c.id])
-    if (requeridos.length > 0) { setError('Completa los campos obligatorios.'); return }
-    setError('')
-    setPaso(2)
+  const llamarAPI = async (prompt) => {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, system: SYSTEM_PROMPT }),
+    })
+    const data = await response.json()
+    if (data.content?.[0]?.text) return data.content[0].text
+    throw new Error('Sin respuesta de la IA')
   }
 
   const generarContrato = async () => {
+    if (!respuesta.trim()) { setError('Por favor escribe tus datos antes de continuar.'); return }
     setCargando(true)
-    setContrato('')
     setError('')
-    const prompt = buildPrompt(tipo, datos, clausulas, notaExtra, clausulaPersonalizada)
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
-      })
-      const data = await response.json()
-      if (data.content?.[0]?.text) setContrato(data.content[0].text)
-      else setError('Error al generar. Intenta de nuevo.')
+      const prompt = `TIPO DE DOCUMENTO: ${titulo}\n\nDATOS PROPORCIONADOS:\n${respuesta}\n\nRedacta el documento completo con la estructura legal correspondiente.`
+      const texto = await llamarAPI(prompt)
+      setContrato(texto)
     } catch {
-      setError('Error de conexión.')
+      setError('Error al generar el contrato. Por favor intenta de nuevo.')
     }
     setCargando(false)
   }
 
+  const enviarCorreccion = async () => {
+    if (!textoCorreccion.trim()) return
+    setCargandoEdicion(true)
+    setError('')
+    try {
+      const prompt = `DOCUMENTO GENERADO ANTERIORMENTE:\n${contrato}\n\nCORRECCIÓN O MODIFICACIÓN SOLICITADA:\n${textoCorreccion}\n\nGenera la versión COMPLETA del documento con los cambios incorporados. Mantén toda la estructura y contenido correcto, solo aplica los cambios indicados.`
+      const texto = await llamarAPI(prompt)
+      setContrato(texto)
+      setEdicionesRestantes(0)
+      setMostrarEditar(false)
+      setTextoCorreccion('')
+    } catch {
+      setError('Error al procesar la corrección. Por favor intenta de nuevo.')
+    }
+    setCargandoEdicion(false)
+  }
+
+  // ── Nav ───────────────────────────────────────────────────────
   const nav = (
-    <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '0.875rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--navy)', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 2px 12px rgba(27,58,107,0.25)' }}>
+    <header style={{
+      background: '#fff',
+      borderBottom: '1px solid var(--border)',
+      padding: '0 2rem',
+      height: 60,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      position: 'sticky',
+      top: 0,
+      zIndex: 50,
+      boxShadow: '0 1px 0 rgba(0,0,0,0.06)',
+    }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <button onClick={onVolver} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: '0.88rem', fontWeight: 500, transition: 'color 0.15s' }}>← Volver</button>
-        <span style={{ color: 'rgba(255,255,255,0.2)' }}>|</span>
-        <span className="font-display" style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff' }}>
-          Contrato<span style={{ color: 'var(--gold)' }}>Fácil</span>
-          <span style={{ fontWeight: 300, color: 'rgba(255,255,255,0.55)', marginLeft: 8, fontSize: '0.82rem' }}>· {titulos[tipo]}</span>
+        <button
+          onClick={() => navigate('/')}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink3)', fontSize: '0.88rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}
+        >
+          ← Inicio
+        </button>
+        <span style={{ color: 'var(--border2)', fontSize: '1.2rem' }}>|</span>
+        <span className="font-display" style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--ink)' }}>
+          Contrato<span style={{ color: 'var(--red)' }}>Fácil</span>
+          <span style={{ fontWeight: 400, color: 'var(--ink3)', marginLeft: 8, fontSize: '0.82rem' }}>· {titulo}</span>
         </span>
       </div>
-      <button className="toggle-theme" onClick={toggleTheme}>{theme === 'light' ? '🌙' : '☀️'}</button>
-    </nav>
+    </header>
   )
 
+  // ── Vista de chat ─────────────────────────────────────────────
+  if (!contrato) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        {nav}
+
+        <div style={{ maxWidth: 680, margin: '0 auto', padding: '2.5rem 1.5rem' }}>
+
+          {/* Tipo badge */}
+          <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{
+              background: 'var(--red-tint)',
+              color: 'var(--red)',
+              border: '1px solid rgba(217,16,35,0.15)',
+              borderRadius: 999,
+              padding: '0.28rem 0.8rem',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+            }}>
+              {titulo}
+            </span>
+          </div>
+
+          {/* Mensaje del abogado */}
+          <div style={{ display: 'flex', gap: '0.85rem', marginBottom: '1.75rem', alignItems: 'flex-start' }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #1A1A1A 0%, #3D3D3D 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1rem', flexShrink: 0,
+              border: '2px solid rgba(217,16,35,0.2)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            }}>
+              ⚖️
+            </div>
+            <div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--ink3)', marginBottom: '0.4rem', letterSpacing: '0.04em' }}>
+                Dr. Alejandro Quispe Morales · Abogado Colegiado
+              </div>
+              <div className="chat-bubble-ai" style={{ whiteSpace: 'pre-line' }}>
+                {pregunta}
+              </div>
+            </div>
+          </div>
+
+          {/* Respuesta del usuario */}
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              color: 'var(--ink3)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.07em',
+              marginBottom: '0.5rem',
+            }}>
+              Tu respuesta
+            </label>
+            <textarea
+              className="input-field"
+              rows={8}
+              placeholder="Escribe aquí todos los datos solicitados arriba..."
+              value={respuesta}
+              onChange={e => { setRespuesta(e.target.value); setError('') }}
+              style={{ resize: 'vertical', lineHeight: 1.7, fontSize: '0.9rem' }}
+            />
+          </div>
+
+          {error && (
+            <div style={{ color: '#D91023', fontSize: '0.83rem', marginBottom: '1rem', padding: '0.6rem 1rem', background: 'rgba(217,16,35,0.06)', borderRadius: 8, border: '1px solid rgba(217,16,35,0.15)' }}>
+              {error}
+            </div>
+          )}
+
+          <button
+            className="btn-primary"
+            style={{ width: '100%', fontSize: '1rem', padding: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            onClick={generarContrato}
+            disabled={cargando}
+          >
+            {cargando ? (
+              <>
+                <span className="spinner" />
+                Generando tu contrato...
+              </>
+            ) : (
+              '✨ Generar contrato'
+            )}
+          </button>
+
+          <p style={{ textAlign: 'center', fontSize: '0.73rem', color: 'var(--ink4)', marginTop: '0.85rem', lineHeight: 1.5 }}>
+            Generado por IA · Documento referencial · Consulta con un abogado colegiado para asesoría formal
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Vista de resultado ────────────────────────────────────────
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {nav}
       {mostrarYape && (
         <ModalYape
           contrato={contrato}
-          titulo={titulos[tipo]}
-          firmas={getFirmas()}
-          modo={modoYape}
-          subtitulo={modoYape === 'edicion' ? 'Has usado tus 3 ediciones gratuitas. Realiza un pago de S/.4.90 para continuar editando.' : undefined}
+          titulo={titulo}
           onCerrar={() => setMostrarYape(false)}
-          onDescarga={handleDescarga}
+          onDescarga={() => { setMostrarYape(false); setDescargado(true) }}
         />
       )}
 
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '2.5rem 1.5rem' }}>
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '2rem 1.5rem 3rem' }}>
 
-        {/* Progreso */}
-        <div style={{ marginBottom: '0.4rem', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--ink3)' }}>
-          <span>{contrato ? 'Contrato listo' : paso === 2 ? 'Cláusulas y notas' : 'Datos del contrato'}</span>
-          <span>{progreso}%</span>
-        </div>
-        <div className="progress-bar"><div className="progress-fill" style={{ width: `${progreso}%` }} /></div>
-
-        {/* PASO 1: Datos */}
-        {!contrato && paso === 1 && (
-          <div className="animate-fade-up">
-            <div style={{ marginBottom: '1.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
-                <span style={{ fontSize: '1.4rem' }}>📋</span>
-                <h2 className="font-display" style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15 }}>{titulos[tipo]}</h2>
-              </div>
-              <p style={{ color: 'var(--ink3)', fontSize: '0.86rem' }}>
-                Los campos marcados con <span style={{ color: 'var(--navy)', fontWeight: 700 }}>*</span> son obligatorios.
-              </p>
+        {/* Cabecera de resultado */}
+        <div style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+              <span style={{
+                background: 'var(--green-bg)',
+                color: 'var(--green)',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                padding: '0.25rem 0.75rem',
+                borderRadius: 999,
+                border: '1px solid rgba(27,138,78,0.2)',
+              }}>
+                ✓ Documento generado
+              </span>
             </div>
-
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid var(--gold)', borderRadius: 'var(--radius)', padding: '1.5rem', marginBottom: '1.5rem', boxShadow: 'var(--shadow)' }}>
-              <div style={{ display: 'grid', gap: '1rem' }}>
-                {campos.map(campo => (
-                  <div key={campo.id}>
-                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--ink2)', marginBottom: '0.4rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-                      {campo.label}
-                      {campo.required && <span style={{ color: 'var(--navy)', marginLeft: 3 }}>*</span>}
-                      {campo.optional && <span style={{ color: 'var(--ink3)', fontWeight: 400, marginLeft: 6, textTransform: 'none' }}>(opcional)</span>}
-                    </label>
-                    <input className="input-field" type="text" placeholder={campo.placeholder} value={datos[campo.id] || ''} onChange={e => handleChange(campo.id, e.target.value)} />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {error && <p style={{ color: '#C0392B', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
-            <button className="btn-primary" style={{ width: '100%' }} onClick={avanzarPaso}>Continuar →</button>
+            <h2 className="font-display" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.2rem' }}>
+              Revisa tu documento
+            </h2>
+            <p style={{ fontSize: '0.82rem', color: 'var(--ink3)' }}>
+              Léelo cuidadosamente antes de descargar.
+            </p>
           </div>
-        )}
 
-        {/* PASO 2: Cláusulas + notas */}
-        {!contrato && paso === 2 && (
-          <div className="animate-fade-up">
-            <div style={{ marginBottom: '1.75rem' }}>
-              <h2 className="font-display" style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.4rem' }}>Personaliza tu contrato</h2>
-              <p style={{ color: 'var(--ink3)', fontSize: '0.86rem' }}>Todo es opcional. Puedes generar directamente.</p>
-            </div>
-
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid var(--gold)', borderRadius: 'var(--radius)', padding: '1.5rem', marginBottom: '1.5rem', boxShadow: 'var(--shadow)' }}>
-              {clausulasOpciones.length > 0 && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--ink2)', marginBottom: '0.75rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>Cláusulas predefinidas</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    {clausulasOpciones.map(c => (
-                      <button key={c} className={`tag-clausula ${clausulas.includes(c) ? 'activo' : ''}`} onClick={() => toggleClausula(c)}>
-                        {clausulas.includes(c) ? '✓ ' : '+ '}{c}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+          {/* Contador de ediciones + botones */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+            <span style={{
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              color: edicionesRestantes === 0 ? '#D91023' : 'var(--ink3)',
+              background: edicionesRestantes === 0 ? 'rgba(217,16,35,0.06)' : 'var(--bg2)',
+              padding: '0.25rem 0.75rem',
+              borderRadius: 999,
+              border: `1px solid ${edicionesRestantes === 0 ? 'rgba(217,16,35,0.18)' : 'var(--border)'}`,
+            }}>
+              ✏️ Intentos restantes: {edicionesRestantes}
+            </span>
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+              {edicionesRestantes > 0 && !mostrarEditar && (
+                <button className="btn-ghost" onClick={() => setMostrarEditar(true)}>
+                  Editar / Corregir
+                </button>
               )}
-
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--ink2)', marginBottom: '0.4rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-                  Cláusula personalizada <span style={{ color: 'var(--ink3)', fontWeight: 400, textTransform: 'none' }}>(opcional)</span>
-                </label>
-                <input className="input-field" type="text" placeholder='Ej: "El inquilino no puede tener visitas después de las 11pm"' value={clausulaPersonalizada} onChange={e => setClausulaPersonalizada(e.target.value)} />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--ink2)', marginBottom: '0.4rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-                  Indicaciones adicionales <span style={{ color: 'var(--ink3)', fontWeight: 400, textTransform: 'none' }}>(opcional)</span>
-                </label>
-                <textarea
-                  className="input-field"
-                  rows={3}
-                  placeholder='Ej: "Quiero que el contrato sea muy estricto con los pagos tardíos" o "Incluir cláusula de renovación automática"'
-                  value={notaExtra}
-                  onChange={e => setNotaExtra(e.target.value)}
-                  style={{ resize: 'vertical' }}
-                />
-              </div>
+              <button
+                className="btn-primary"
+                onClick={() => setMostrarYape(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                ⬇ {descargado ? 'Descargar de nuevo' : 'Descargar — S/. 4.90'}
+              </button>
             </div>
+          </div>
+        </div>
 
-            {error && <p style={{ color: '#C0392B', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
-
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button className="btn-ghost" onClick={() => setPaso(1)}>← Atrás</button>
-              <button className="btn-primary" style={{ flex: 1 }} onClick={generarContrato} disabled={cargando}>
-                {cargando ? '⏳ Generando contrato...' : '✨ Generar Contrato'}
+        {/* Panel de edición */}
+        {mostrarEditar && (
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderLeft: '3px solid var(--gold)',
+            borderRadius: 'var(--radius)',
+            padding: '1.25rem',
+            marginBottom: '1.25rem',
+            boxShadow: 'var(--shadow)',
+          }}>
+            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink2)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.5rem' }}>
+              ¿Qué quieres corregir o agregar?
+            </label>
+            <textarea
+              className="input-field"
+              rows={3}
+              placeholder='Ej: "Cambiar el monto de alquiler a S/. 1,800" o "El DNI del inquilino es 45678901"'
+              value={textoCorreccion}
+              onChange={e => setTextoCorreccion(e.target.value)}
+              style={{ resize: 'vertical', marginBottom: '0.85rem' }}
+            />
+            {error && (
+              <div style={{ color: '#D91023', fontSize: '0.83rem', marginBottom: '0.75rem' }}>{error}</div>
+            )}
+            <div style={{ display: 'flex', gap: '0.6rem' }}>
+              <button className="btn-ghost" onClick={() => { setMostrarEditar(false); setTextoCorreccion('') }}>
+                Cancelar
+              </button>
+              <button
+                className="btn-primary"
+                onClick={enviarCorreccion}
+                disabled={cargandoEdicion || !textoCorreccion.trim()}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                {cargandoEdicion ? <><span className="spinner" /> Procesando...</> : 'Enviar corrección'}
               </button>
             </div>
           </div>
         )}
 
-        {/* RESULTADO */}
-        {contrato && (
-          <div className="animate-fade-up">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-              <div>
-                <span style={{ background: 'var(--green-bg)', color: 'var(--green)', fontSize: '0.72rem', fontWeight: 700, padding: '0.28rem 0.85rem', borderRadius: 999, display: 'inline-block', marginBottom: '0.6rem', border: '1px solid rgba(46,125,82,0.2)' }}>✓ Contrato generado</span>
-                <h2 className="font-display" style={{ fontSize: '1.65rem', fontWeight: 700, color: 'var(--ink)' }}>Revisa tu contrato</h2>
-                <p style={{ color: 'var(--ink3)', fontSize: '0.82rem', marginTop: '0.25rem' }}>Léelo antes de descargar</p>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
-                <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                  <button className="btn-ghost" onClick={handleEditar}>Editar</button>
-                  {descargado
-                    ? <button className="btn-primary" onClick={() => { setModoYape('descarga'); setMostrarYape(true) }}>⬇ Descargar de nuevo</button>
-                    : <button className="btn-primary" onClick={() => { setModoYape('descarga'); setMostrarYape(true) }}>⬇ Descargar PDF — S/. 4.90</button>
-                  }
-                </div>
-                <span style={{ fontSize: '0.72rem', color: edicionesRestantes === 0 ? '#C0392B' : 'var(--ink3)', fontWeight: edicionesRestantes === 0 ? 600 : 400 }}>
-                  {edicionesRestantes > 0
-                    ? `Ediciones gratuitas restantes: ${edicionesRestantes}`
-                    : 'Sin ediciones gratuitas — requiere pago para editar'}
-                </span>
-              </div>
-            </div>
+        {/* Documento */}
+        <div style={{
+          background: '#fff',
+          border: '1px solid var(--border)',
+          borderTop: '3px solid var(--red)',
+          borderRadius: 'var(--radius)',
+          padding: '2.5rem 3rem',
+          whiteSpace: 'pre-wrap',
+          lineHeight: 1.9,
+          fontSize: '0.88rem',
+          color: 'var(--ink)',
+          fontFamily: "'Playfair Display', Georgia, serif",
+          boxShadow: 'var(--shadow-lg)',
+          maxHeight: '65vh',
+          overflowY: 'auto',
+        }}>
+          {contrato}
+        </div>
 
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid var(--navy)', borderRadius: 'var(--radius)', padding: '2.5rem', whiteSpace: 'pre-wrap', lineHeight: 1.9, fontSize: '0.875rem', color: 'var(--ink)', maxHeight: '60vh', overflowY: 'auto', boxShadow: 'var(--shadow)', fontFamily: 'Georgia, serif' }}>
-              {contrato}
-            </div>
-
-            <div style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-              <span className="legal-badge">🛡️ Documento Legal Referencial</span>
-              <span style={{ fontSize: '0.74rem', color: 'var(--ink3)' }}>· Consulte con un abogado colegiado</span>
-            </div>
-          </div>
-        )}
+        {/* Footer legal */}
+        <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+          <span className="legal-badge">🛡️ Documento Legal Referencial</span>
+          <span style={{ fontSize: '0.74rem', color: 'var(--ink4)' }}>· Consulte con un abogado colegiado</span>
+        </div>
       </div>
     </div>
   )
